@@ -1,12 +1,13 @@
 import { Record } from "../record/record.model";
 import { AppError } from "../../utils/appError";
+import mongoose from "mongoose";
 
 export const getSummaryService = async (user: any) => {
   if (!user?.companyId) {
     throw new AppError("Invalid user context", 400);
   }
 
-  const companyId = user.companyId;
+  const companyId = new mongoose.Types.ObjectId(user.companyId);
 
   const result = await Record.aggregate([
     {
@@ -43,20 +44,27 @@ export const getCategoryBreakdownService = async (user: any) => {
     throw new AppError("Invalid user context", 400);
   }
 
-  return await Record.aggregate([
+  const companyId = new mongoose.Types.ObjectId(user.companyId);
+
+  const result = await Record.aggregate([
     {
       $match: {
-        companyId: user.companyId,
+        companyId,
         isDeleted: false,
       },
     },
     {
       $group: {
-        _id: "$category",
+        _id: { $toLower: { $trim: { input: "$category" } } },
         total: { $sum: "$amount" },
       },
     },
   ]);
+
+  return result.map((item) => ({
+    category: item._id,
+    total: item.total,
+  }));
 };
 
 export const getRecentRecordsService = async (user: any, limit: number) => {
@@ -77,8 +85,10 @@ export const getMonthlyTrendsService = async (user: any, year?: number) => {
     throw new AppError("Invalid user context", 400);
   }
 
+  const companyId = new mongoose.Types.ObjectId(user.companyId);
+
   const matchStage: any = {
-    companyId: user.companyId,
+    companyId,
     isDeleted: false,
   };
 
