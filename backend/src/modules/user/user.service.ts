@@ -27,14 +27,35 @@ export const createUserService = async (data: any, currentUser: any) => {
   return user;
 };
 
-export const getUsersService = async (currentUser: any) => {
+export const getUsersService = async (currentUser: any, query: any) => {
   if (!currentUser || currentUser.role !== "ADMIN") {
     throw new AppError("Forbidden", 403);
   }
 
-  return await User.find({
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const filter = {
     companyId: currentUser.companyId,
-  }).select("-password");
+  };
+
+  const users = await User.find(filter)
+    .select("-password")
+    .skip(skip)
+    .limit(limit);
+
+  const total = await User.countDocuments(filter);
+
+  return {
+    users,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const updateUserService = async (
@@ -44,6 +65,10 @@ export const updateUserService = async (
 ) => {
   if (!currentUser || currentUser.role !== "ADMIN") {
     throw new AppError("Forbidden", 403);
+  }
+
+  if (currentUser.userId === id && data.role) {
+    throw new AppError("Admin cannot change own role", 400);
   }
 
   const user = await User.findOneAndUpdate(

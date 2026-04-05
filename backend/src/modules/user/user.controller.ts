@@ -32,7 +32,7 @@ export const getUsers = async (
   try {
     const user = (req as any).user;
 
-    const users = await getUsersService(user);
+    const users = await getUsersService(user, req.query);
 
     return res.status(200).json({
       success: true,

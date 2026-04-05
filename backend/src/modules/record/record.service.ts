@@ -3,7 +3,6 @@ import { Record } from "./record.model";
 
 // creates record of transaction or any other thing
 export const createRecordService = async (data: any, user: any) => {
-  
   if (!user) {
     throw new AppError("Unauthorized", 401);
   }
@@ -24,6 +23,11 @@ export const getRecordsService = async (query: any, user: any) => {
   if (!user) {
     throw new AppError("Unauthorized", 401);
   }
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+
   const filter: any = {
     companyId: user.companyId,
     isDeleted: false,
@@ -32,6 +36,14 @@ export const getRecordsService = async (query: any, user: any) => {
   if (query.type) filter.type = query.type;
   if (query.category) filter.category = query.category;
 
+  // searching query
+  if (query.search) {
+    filter.$or = [
+      { notes: { $regex: query.search, $options: "i" } },
+      { category: { $regex: query.search, $options: "i" } },
+    ];
+  }
+
   if (query.startDate && query.endDate) {
     filter.date = {
       $gte: new Date(query.startDate),
@@ -39,13 +51,22 @@ export const getRecordsService = async (query: any, user: any) => {
     };
   }
 
-  const record = await Record.find(filter).sort({ date: -1 });
+  const records = await Record.find(filter)
+    .sort({ date: -1 })
+    .skip(skip)
+    .limit(limit);
 
-  if (!record) {
-    throw new AppError("Record not found", 404);
-  }
+  const total = await Record.countDocuments(filter);
 
-  return record;
+  return {
+    records,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 // update record

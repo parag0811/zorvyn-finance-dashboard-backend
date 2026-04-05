@@ -47,6 +47,18 @@ export const getRecordsValidation = [
   query("startDate").optional().isISO8601().withMessage("Invalid startDate"),
 
   query("endDate").optional().isISO8601().withMessage("Invalid endDate"),
+
+  query("search").optional().isString().withMessage("Search must be string"),
+];
+
+// Pagination query validation
+export const paginationValidation = [
+  query("page").optional().isInt({ min: 1 }).withMessage("Page must be >= 1"),
+
+  query("limit")
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage("Limit must be between 1 and 50"),
 ];
 
 const router = Router();
@@ -66,6 +78,7 @@ router.get(
   authMiddleware,
   allowRoles("ADMIN", "ANALYST", "VIEWER"),
   getRecordsValidation,
+  paginationValidation,
   validate,
   getRecords,
 );

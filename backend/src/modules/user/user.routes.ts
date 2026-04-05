@@ -3,7 +3,7 @@ import { createUser, getUsers, updateUser } from "./user.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import { allowRoles } from "../../middlewares/role.middleware";
 import { validate } from "../../middlewares/validate.middleware";
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 
 export const createUserValidation = [
   body("name").notEmpty().withMessage("Name is required"),
@@ -31,6 +31,12 @@ export const updateUserValidation = [
     .withMessage("Invalid status"),
 ];
 
+// Pagination for users fetch
+export const userPaginationValidation = [
+  query("page").optional().isInt({ min: 1 }),
+  query("limit").optional().isInt({ min: 1, max: 50 }),
+];
+
 const router = Router();
 
 router.post(
@@ -42,7 +48,14 @@ router.post(
   createUser,
 );
 
-router.get("/", authMiddleware, allowRoles("ADMIN"), getUsers);
+router.get(
+  "/",
+  authMiddleware,
+  allowRoles("ADMIN"),
+  userPaginationValidation,
+  validate,
+  getUsers,
+);
 
 router.patch(
   "/:id",
