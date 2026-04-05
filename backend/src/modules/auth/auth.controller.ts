@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { registerService, loginService } from "./auth.service";
+import { AppError } from "../../utils/appError";
 
 // user register company along with sign-up
 export const register = async (
@@ -10,8 +11,13 @@ export const register = async (
   try {
     const user = await registerService(req.body);
 
+    if (!user) {
+      throw new AppError("Error signing up. Try again later.", 503);
+    }
+
     res.status(201).json({
       success: true,
+      data: null,
       message: "User registered successfully",
     });
   } catch (error: any) {
@@ -26,11 +32,11 @@ export const login = async (
   next: NextFunction,
 ) => {
   try {
-    const result = await loginService(req.body);
+    const data = await loginService(req.body);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data,
       message: "Login successful",
     });
   } catch (error: any) {

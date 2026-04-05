@@ -18,6 +18,7 @@ export const createUser = async (
     return res.status(201).json({
       success: true,
       data: newUser,
+      message: "User created successfully",
     });
   } catch (error) {
     next(error);
@@ -32,11 +33,15 @@ export const getUsers = async (
   try {
     const user = (req as any).user;
 
-    const users = await getUsersService(user, req.query);
+    const data = await getUsersService(user, req.query);
 
     return res.status(200).json({
       success: true,
-      data: users,
+      data: {
+        items: data.users,
+        pagination: data.pagination,
+      },
+      message: "Users fetched successfully",
     });
   } catch (error) {
     next(error);
@@ -56,6 +61,7 @@ export const updateUser = async (
     return res.status(200).json({
       success: true,
       data: updatedUser,
+      message: "User updated successfully",
     });
   } catch (error) {
     next(error);

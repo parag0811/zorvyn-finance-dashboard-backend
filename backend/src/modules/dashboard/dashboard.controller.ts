@@ -19,6 +19,7 @@ export const getSummary = async (
     return res.status(200).json({
       success: true,
       data,
+      message: "Dashboard summary fetched successfully",
     });
   } catch (error) {
     next(error);
@@ -38,6 +39,7 @@ export const getCategoryBreakdown = async (
     return res.status(200).json({
       success: true,
       data,
+      message: "Dashboard data fetched successfully",
     });
   } catch (error) {
     next(error);
@@ -59,6 +61,7 @@ export const getRecentRecords = async (
     return res.status(200).json({
       success: true,
       data,
+      message: "Recent records fetched successfully",
     });
   } catch (error) {
     next(error);
@@ -80,6 +83,7 @@ export const getMonthlyTrends = async (
     return res.status(200).json({
       success: true,
       data,
+      message: "Monthly Trends fetched successfully",
     });
   } catch (error) {
     next(error);

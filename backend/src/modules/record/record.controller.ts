@@ -15,14 +15,15 @@ export const createRecord = async (
     const user = (req as any).user;
     console.log("REQ.USER:", (req as any).user);
 
-    const record = await createRecordService(req.body, user);
+    const data = await createRecordService(req.body, user);
 
     return res.status(201).json({
       success: true,
-      data: record,
+      data,
+      message: "Record created successfully",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     next(error);
   }
 };
@@ -34,11 +35,15 @@ export const getRecords = async (
 ) => {
   try {
     const user = (req as any).user;
-    const records = await getRecordsService(req.query, user);
+    const data = await getRecordsService(req.query, user);
 
     return res.status(200).json({
       success: true,
-      data: records,
+      data: {
+        items: data.records,
+        pagination: data.pagination,
+      },
+      message: "Records fetched successfully",
     });
   } catch (error) {
     next(error);
@@ -52,10 +57,11 @@ export const updateRecord = async (
 ) => {
   try {
     const user = (req as any).user;
-    const record = await updateRecordService(req.params.id, req.body, user);
+    const data = await updateRecordService(req.params.id, req.body, user);
     return res.status(200).json({
       success: true,
-      data: record,
+      data,
+      message: "Record updated successfully",
     });
   } catch (error) {
     next(error);
@@ -69,11 +75,13 @@ export const deleteRecord = async (
 ) => {
   try {
     const user = (req as any).user;
-    
+
     await deleteRecordService(req.params.id, user);
 
     return res.status(200).json({
       success: true,
+      data: null,
+      message: "Record deleted successfully",
     });
   } catch (error) {
     next(error);
